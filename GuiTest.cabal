@@ -1,0 +1,39 @@
+name:                GuiTest
+version:             0.1.0.0
+synopsis:            Small scripts for making and comparing screenshots
+-- description:
+license:             BSD3
+license-file:        LICENSE
+author:              Kai Harries
+maintainer:          kai.harries@onesubsea.com
+copyright:           Kai Harries
+category:            Testing
+build-type:          Simple
+cabal-version:       >=1.8
+
+executable ConvertClicks
+  main-is:          ConvertClicks.hs
+  build-depends:    base ==4.5.*
+  hs-source-dirs:   src
+
+executable DiffImg
+  main-is:          DiffImg.hs
+  build-depends:    base ==4.5.*
+                    , directory >=1.1
+                    , filepath >=1.3
+                    , JuicyPixels >=3.1.5.3
+  hs-source-dirs:   src
+
+executable MaskImg
+  main-is:          MaskImg.hs
+  build-depends:    base ==4.5.*
+                    , JuicyPixels >=3.1.5.3
+  hs-source-dirs:   src
+
+executable Screenshot
+  main-is:          Screenshot.hs
+  build-depends:    base ==4.5.*
+                    , process >=1.1
+                    , xtest >=0.2
+                    , X11 >=1.5
+  hs-source-dirs:   src
