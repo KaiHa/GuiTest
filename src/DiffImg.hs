@@ -70,8 +70,8 @@ p8to16a = promoteImage
 -- Areas that are 100% transparent in the first image are ignored.
 imageDiff :: Image PixelRGBA16 -> Image PixelRGBA16 -> (Bool, Either String (Image PixelRGB8))
 imageDiff a@(Image a_width a_height _) b@(Image b_width b_height _)
-    | a_width  /= b_width  = (False, Left "Images have different width.")
-    | a_height /= b_height = (False, Left "Images have different height.")
+    | a_width  /= b_width  = (True, Left "Images have different width.")
+    | a_height /= b_height = (True, Left "Images have different height.")
     | otherwise = right $ generateFoldImage pixelDiff False a_width a_height
     where pixelDiff acc x y =
               if ignorePixel
