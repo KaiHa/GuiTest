@@ -37,18 +37,20 @@ fileDiff fileA fileB = do
             a <- readPng fileA
             b <- readPng fileB
             let (hasDiff, result) = diff a b
-            writePng outputFile result
-            when hasDiff printDiff
+            write outputFile result
+            when hasDiff $ putStrLn diffMsg
             return hasDiff
     where diff (Right a) (Right b) = dynImageDiff a b
           diff (Left a)         _  = error a
           diff _         (Left b)  = error b
-          printDiff    = putStrLn (fileA ++ " and " ++ fileB ++ " differ!")
+          diffMsg      = fileA ++ " and " ++ fileB ++ " differ!"
           printMissing = putStrLn (fileB ++ " is missing!")
           outputFile   = (takeBaseName fileA) ++ ".diff.png"
+          write fname (Right png) =  writePng fname png
+          write _     (Left err)  = putStrLn $ diffMsg ++ " " ++ err
 
 -- |Compare two 'DynamicImage'. See 'imageDiff' below.
-dynImageDiff :: DynamicImage -> DynamicImage -> (Bool, Image PixelRGB8)
+dynImageDiff :: DynamicImage -> DynamicImage -> (Bool, Either String (Image PixelRGB8))
 dynImageDiff (ImageRGB8   a) (ImageRGB8   b) = imageDiff (promoteImage a) (promoteImage b)
 dynImageDiff (ImageRGB8   a) (ImageRGBA8  b) = imageDiff (promoteImage a) (promoteImage b)
 dynImageDiff (ImageRGBA8  a) (ImageRGB8   b) = imageDiff (promoteImage a) (promoteImage b)
@@ -66,8 +68,11 @@ p8to16a = promoteImage
 -- The returned 'Image' contains the differences. Differnces are shown as white
 -- pixels. Equal pixels are shown as black. Ignored areas are shown as green.
 -- Areas that are 100% transparent in the first image are ignored.
-imageDiff :: Image PixelRGBA16 -> Image PixelRGBA16 -> (Bool, Image PixelRGB8)
-imageDiff a@(Image w h _) b = generateFoldImage pixelDiff False w h
+imageDiff :: Image PixelRGBA16 -> Image PixelRGBA16 -> (Bool, Either String (Image PixelRGB8))
+imageDiff a@(Image a_width a_height _) b@(Image b_width b_height _)
+    | a_width  /= b_width  = (False, Left "Images have different width.")
+    | a_height /= b_height = (False, Left "Images have different height.")
+    | otherwise = right $ generateFoldImage pixelDiff False a_width a_height
     where pixelDiff acc x y =
               if ignorePixel
               then ign
@@ -78,3 +83,4 @@ imageDiff a@(Image w h _) b = generateFoldImage pixelDiff False w h
                     ok  = (acc,  PixelRGB8 0     0   0)
                     ign = (acc,  PixelRGB8 0   150   0)
                     nok = (True, PixelRGB8 255 255 255)
+          right (c,d) = (c, Right d)
